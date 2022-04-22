@@ -15,6 +15,26 @@ namespace RobberLanguageAPI.Controllers
             _ctx = ctx;
         }
 
+        [Route("CreateAndStoreTranslation")]
+        [HttpPost]
+        public async Task<IActionResult> TranslateAndStore(string sentence)
+        {
+            if (String.IsNullOrWhiteSpace(sentence)) return BadRequest();
+
+            var newTranslation = new Translation()
+            {
+                CreationDate = DateTime.Now,
+                ModificationDate = DateTime.Now,
+                OriginalSentence = sentence,
+                TranslatedSentence = TranslateSentence(sentence),
+            };
+
+            await _ctx.Translations.AddAsync(newTranslation);
+            await _ctx.SaveChangesAsync();
+
+            return Created("", newTranslation);
+        }
+
         [Route("CreateTranslation")]
         [HttpPost]
         public Translation Translate(string sentence)
@@ -28,7 +48,7 @@ namespace RobberLanguageAPI.Controllers
 
         private static string TranslateSentence(string sentence)
         {
-            const string consonants = "BbCcDdFfGgHhJjKkLlMmNnPpQqRrSsTtVvWwXxZz";
+            const string consonants = "bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ";
             string newSentence = sentence;
 
             foreach (var consonant in consonants)
